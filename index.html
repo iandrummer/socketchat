@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Chat</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+  </head>
+  <body>
+    <div id="users">
+      <ul id="online-users">
+      <li><strong>Online Now</strong></li>
+      
+      </ul>
+    </div>
+    <div id="messagebox">
+    <ul id="messages"></ul>
+    </div>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>send</button>
+    </form>
+
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+
+  /*
+  ** FUNCTIONS
+  */
+
+  // Instantiate notifications
+    function notifyMe() {
+      // Check if the browser supports notifications
+      if (!("Notification" in window)) {
+        alert("This browser does not support desktop notification");
+      }
+
+      // Check whether notification permissions have already been granted
+      else if (Notification.permission === "granted") {
+        // If OK, create a notification
+        var notification = new Notification("Hi there!",{ body: 'You will receive notifications from now on!'});
+      }
+
+      // Otherwise, we need to ask the user for permission
+      else if (Notification.permission !== 'denied') {
+        Notification.requestPermission(function (permission) {
+          // If the user accepts, let's create a notification
+          if (permission === "granted") {
+            var notification = new Notification("Hi there!",{ body: 'You will receive notifications from now on!'});
+          }
+        });
+      }
+
+    }
+
+    var div = $('#messagebox');
+
+    // Scroll to bottom of message box
+    var scrollToBottom = function() {
+      div.scrollTop( div.get(0).scrollHeight );
+    }
+
+    // Call function on pageload
+    notifyMe();
+
+    var typing = false;
+    var timeout = undefined;
+
+     
+    
+  /*
+  ** SERVER
+  */
+    
+  var server = io.connect('http://localhost:3000');
+
+  // On connect ask for name and display connected to chat
+  server.on('connect', function(data){
+    
+    var nickname = prompt("what is your nickname?");
+    $('#messages').append($('<li>').text('Connected to chat as '+nickname+'.'));
+    server.emit('join', nickname);
+    scrollToBottom();
+
+  });
+
+  function timeoutFunction() {  
+    typing = false;
+    server.emit("typing", false);
+  }
+
+  // Handle typing function
+  $("#m").keypress(function(){
+      
+      if (typing === false && $("#m").is(":focus")) {
+        typing = true;
+        server.emit("typing", true);
+      } else {
+        clearTimeout(timeout);
+        timeout = setTimeout(timeoutFunction, 3000);
+      }
+    
+  });
+
+  // Show 'typing...'
+  server.on("isTyping", function(data) {  
+    if (data.isTyping) {
+      
+        $(".user-"+data.person).append("<span class='user-"+data.person+"-typing'> (typing)</span>");
+      
+    } else {
+      $(".user-"+data.person+"-typing").remove();
+    }
+  });
+
+  // Handle disconnect
+  server.on('disconnect', function(data){
+
+    server.emit('disconnect',nickname)
+  
+  });
+
+  // Send messages to server and reset input field
+  $('form').submit(function(){
+
+    server.emit('message', $('#m').val());
+    $('#m').val('');
+    return false;
+    clearTimeout(timeout);
+    timeout = setTimeout(timeoutFunction, 0);
+    
+  });
+
+  // Add message to list
+  server.on('message', function(msg){
+
+    $('#messages').append($('<li>').html('<span class="chat-date">'+msg.time+'</span><span class="chat-user">'+msg.user+'</span><span class="chat-message">'+msg.message+'</span>'));
+    scrollToBottom();
+    $(".user-"+msg.user+"-typing").remove();
+    clearTimeout(timeout);
+    timeout = setTimeout(timeoutFunction, 0);
+
+  });
+
+  // Show who joined
+  server.on('joined', function(name){
+
+    $('#messages').append($('<li>').html('<span class="notification">'+name+' joined the chat.</span>'));
+    scrollToBottom();
+
+  });
+
+  // Show notifications to group
+  server.on('notify', function(msg) {
+
+    var n = new Notification(msg.user, {icon: 'http://gurucul.com/wp-content/uploads/2015/01/default-user-icon-profile.png', body: msg.message});
+    setTimeout(n.close.bind(n), 4000);
+
+  });
+
+  // Show who's online
+  server.on('isOnline', function(name){
+
+    $('#online-users').append($('<li class="user-'+name+'">').text(name));
+  
+  });
+
+  // Show who left
+  server.on('left', function(name){
+
+    $('#messages').append($('<li>').html('<span class="notification">'+name+' left the chat.</span>'));
+    $( ".user-"+name ).remove();
+
+  });
+
+  </script>
+  </body>
+</html>

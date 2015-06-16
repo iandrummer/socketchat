@@ -1,0 +1,118 @@
+/*
+** GENERAL STYLES
+*/
+* { margin: 0; padding: 0; box-sizing: border-box; line-height: 1.5}
+
+html,body {
+  height: 100%;
+}
+
+body { font: 13px Helvetica, Arial; max-width: 960px;}
+
+/*
+** SIDE PANEL
+*/
+
+#users {
+  width: 20%;
+  float: left;
+  height: 100%;
+  clear: both;
+  background-color: #eee;
+  text-align: center;
+}
+
+#users ul>li {
+  padding: 10px 20px;
+}
+
+span[class*="-typing"] {
+  font-style: italic;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+/*
+** MESSAGE LIST STYLES
+*/
+
+#messagebox {
+  width: 80%;
+  float: left;
+  height: 91%;
+  box-shadow: -5px 0px 5px #ccc;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: scroll;
+}
+
+#messages { list-style-type: none; margin: 0; padding: 0; }
+#messages li { padding: 10px 10px; }
+#messages li:nth-child(odd) { background: #eee; }
+
+#messages span {
+  margin-right: 1em;
+}
+
+
+.notification {
+  font-style: italic;
+  color: #222;
+}
+
+.chat-date {
+  color: #666;
+}
+
+.chat-user {
+  color: #666;
+  font-weight: bold;
+}
+
+/*
+** FORM INPUT
+*/
+
+form { background-color: #aaa; padding: 5px; position: fixed; bottom: 0; width: 960px; height: 10%; max-height: 40px;}
+form input { border: 0; padding: 0 10px; width: 90%; margin-right: .5%; font-size: 1.5em;}
+form button { width: 9%; background: #ddd; border: none; padding: 0px; font-size: 1.5em; box-size: border-box; }
+
+/*MEDIA*/
+
+/* PS VITA */
+@media screen and (max-width: 960px) {
+
+  body {
+    width: 100%;
+  }
+
+  form {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  form input {
+    width: 80%;
+    height: 95%;
+    margin: auto 0
+  }
+  form button {
+    width: 19%;
+    height: 95%;
+    float: right
+  }
+}
+
+/* CONTROLS HEIGHT OF MESSAGE BOX ON DEVICES */
+@media screen and (min-height: 540px) {
+
+  #messagebox {
+    height: 95%;
+  }
+  form {
+    height: 6%;
+  }
+  input {
+    font-size: 1em;
+  }
+}
